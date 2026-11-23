@@ -1,0 +1,1348 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EcoForestal IA — Simulación Ilustrativa</title>
+  <style>
+    :root {
+      --bg-main: #060b09;
+      --bg-card: #0c1411;
+      --bg-card-soft: #111c18;
+      --border: #1d3129;
+      --border-bright: #2c4b3f;
+      --text-main: #e8f1ed;
+      --text-muted: #8fa69d;
+      --accent-green: #16a34a;
+      --accent-green-bright: #22c55e;
+      --accent-green-soft: rgba(34, 197, 94, 0.14);
+      --accent-amber: #f59e0b;
+      --accent-amber-soft: rgba(245, 158, 11, 0.15);
+      --accent-red: #ef4444;
+      --accent-red-soft: rgba(239, 68, 68, 0.15);
+      --radius-lg: 14px;
+      --radius-md: 10px;
+      --radius-sm: 8px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, sans-serif;
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      line-height: 1.45;
+      padding: 18px;
+    }
+
+    .dashboard {
+      max-width: 1380px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    /* Header */
+    .topbar {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 14px 18px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 9px;
+      background: var(--accent-green-soft);
+      border: 1px solid rgba(34, 197, 94, 0.35);
+      display: grid;
+      place-items: center;
+      color: var(--accent-green-bright);
+      font-weight: 700;
+      font-size: 17px;
+    }
+
+    .brand-title-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .brand-title-row h1 {
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+
+    .badge-sim {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 2px 7px;
+      border-radius: 999px;
+      background: rgba(59, 130, 246, 0.16);
+      color: #93c5fd;
+      border: 1px solid rgba(59, 130, 246, 0.35);
+    }
+
+    .brand-sub {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .brand-sub em {
+      font-style: italic;
+      color: #b7ccc3;
+    }
+
+    .controls-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .pill-group {
+      display: inline-flex;
+      background: var(--bg-card-soft);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 3px;
+      gap: 3px;
+    }
+
+    .pill-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 12px;
+      font-weight: 500;
+      padding: 5px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .pill-btn:hover {
+      color: var(--text-main);
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .pill-btn.active {
+      background: var(--accent-green);
+      color: #ffffff;
+      font-weight: 600;
+    }
+
+    /* Filter Bar */
+    .filter-bar {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 10px 16px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .filter-section {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 7px;
+    }
+
+    .filter-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      margin-right: 4px;
+    }
+
+    .filter-chip {
+      background: var(--bg-card-soft);
+      border: 1px solid var(--border);
+      color: #c5d6cf;
+      font-size: 12px;
+      padding: 5px 11px;
+      border-radius: 7px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .filter-chip:hover {
+      border-color: var(--border-bright);
+    }
+
+    .filter-chip.active {
+      background: var(--accent-green-soft);
+      border-color: var(--accent-green-bright);
+      color: var(--accent-green-bright);
+      font-weight: 600;
+    }
+
+    .filter-chip.status-stress.active {
+      background: var(--accent-amber-soft);
+      border-color: var(--accent-amber);
+      color: #fcd34d;
+    }
+
+    .filter-chip.status-dead.active {
+      background: var(--accent-red-soft);
+      border-color: var(--accent-red);
+      color: #fca5a5;
+    }
+
+    /* KPI Row */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .kpi-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 15px 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 10px;
+      position: relative;
+    }
+
+    .kpi-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .kpi-title {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--text-muted);
+    }
+
+    .kpi-icon-box {
+      width: 28px;
+      height: 28px;
+      border-radius: 7px;
+      background: var(--accent-green-soft);
+      color: var(--accent-green-bright);
+      display: grid;
+      place-items: center;
+      font-size: 13px;
+      flex-shrink: 0;
+    }
+
+    .kpi-icon-box.warn {
+      background: var(--accent-amber-soft);
+      color: var(--accent-amber);
+    }
+
+    .kpi-value-row {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .kpi-number {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: #ffffff;
+    }
+
+    .kpi-number.green {
+      color: var(--accent-green-bright);
+    }
+
+    .kpi-number.amber {
+      color: #fbbf24;
+    }
+
+    .kpi-sub-pill {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: var(--bg-card-soft);
+      border: 1px solid var(--border);
+      color: #b8cbc3;
+    }
+
+    .kpi-sub-pill.alert-pill {
+      background: var(--accent-red-soft);
+      border-color: rgba(239, 68, 68, 0.35);
+      color: #fca5a5;
+      font-weight: 600;
+    }
+
+    .bio-metrics {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin: 2px 0;
+    }
+
+    .bio-box {
+      background: var(--bg-card-soft);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 6px 8px;
+    }
+
+    .bio-label {
+      font-size: 10px;
+      color: var(--text-muted);
+      display: block;
+    }
+
+    .bio-val {
+      font-size: 15px;
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    .kpi-footer {
+      font-size: 11.5px;
+      color: var(--text-muted);
+    }
+
+    .parcel-mini-tags {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      font-size: 11px;
+    }
+
+    .parcel-mini-tags span {
+      background: var(--bg-card-soft);
+      border: 1px solid var(--border);
+      padding: 2px 7px;
+      border-radius: 5px;
+      color: #b7ccc3;
+    }
+
+    .alert-list {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      font-size: 11.5px;
+      color: #d6e3dd;
+    }
+
+    .alert-item {
+      background: var(--bg-card-soft);
+      border-left: 3px solid var(--accent-amber);
+      padding: 5px 8px;
+      border-radius: 0 6px 6px 0;
+    }
+
+    /* Main Workspace */
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1.55fr 1fr;
+      gap: 12px;
+      align-items: stretch;
+    }
+
+    .panel {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .panel-title {
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    .panel-subtitle {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .layers-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .layer-btn {
+      background: var(--bg-card-soft);
+      border: 1px solid var(--border);
+      color: #c2d4cc;
+      font-size: 11.5px;
+      padding: 5px 10px;
+      border-radius: 7px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .layer-btn.active {
+      background: var(--accent-green);
+      border-color: var(--accent-green-bright);
+      color: #ffffff;
+      font-weight: 600;
+    }
+
+    .map-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+      font-size: 11.5px;
+      color: var(--text-muted);
+      background: var(--bg-card-soft);
+      border: 1px solid var(--border);
+      padding: 7px 12px;
+      border-radius: 8px;
+    }
+
+    .map-canvas-wrap {
+      position: relative;
+      width: 100%;
+      height: 360px;
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      border: 1px solid var(--border);
+      background: #070d0a;
+    }
+
+    canvas#orthomosaicCanvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+      cursor: crosshair;
+    }
+
+    .map-legend {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      font-size: 11.5px;
+      color: var(--text-muted);
+    }
+
+    .legend-items {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .legend-dot {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    /* Inspection Panel */
+    .inspection-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .status-badge {
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .status-badge.saludable {
+      background: var(--accent-green-soft);
+      color: var(--accent-green-bright);
+      border: 1px solid rgba(34, 197, 94, 0.4);
+    }
+
+    .status-badge.estres {
+      background: var(--accent-amber-soft);
+      color: #fbbf24;
+      border: 1px solid rgba(245, 158, 11, 0.4);
+    }
+
+    .status-badge.muerto {
+      background: var(--accent-red-soft);
+      color: #f87171;
+      border: 1px solid rgba(239, 68, 68, 0.4);
+    }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      background: var(--bg-card-soft);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 12px;
+    }
+
+    .meta-item span {
+      display: block;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .meta-item strong {
+      font-size: 13px;
+      color: #ffffff;
+    }
+
+    .progress-group {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .progress-row {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .progress-top {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+    }
+
+    .progress-top span:first-child {
+      color: var(--text-muted);
+    }
+
+    .progress-top span:last-child {
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    .bar-track {
+      height: 8px;
+      background: var(--bg-card-soft);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #16a34a, #4ade80);
+      border-radius: 999px;
+      transition: width 0.25s ease;
+    }
+
+    .bar-fill.amber {
+      background: linear-gradient(90deg, #d97706, #fbbf24);
+    }
+
+    .bar-fill.red {
+      background: linear-gradient(90deg, #dc2626, #f87171);
+    }
+
+    .rec-box {
+      background: var(--bg-card-soft);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 11px 12px;
+      font-size: 12px;
+      color: #c9dbd3;
+    }
+
+    @media (max-width: 1080px) {
+      .kpi-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .main-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .kpi-grid {
+        grid-template-columns: 1fr;
+      }
+      .meta-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="dashboard">
+    <!-- Top Bar -->
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-icon">✳</div>
+        <div>
+          <div class="brand-title-row">
+            <h1>EcoForestal IA</h1>
+            <span class="badge-sim">Simulación Ilustrativa</span>
+          </div>
+          <p class="brand-sub">
+            Monitoreo forestal en zonas áridas con drones multiespectrales e IA · Especie:
+            <em>Neltuma pallida</em> (Algarrobo)
+          </p>
+        </div>
+      </div>
+
+      <div class="controls-group">
+        <div class="pill-group" id="dateSelector">
+          <button class="pill-btn" data-date="f1">Fecha 1: Línea Base (Mes 3)</button>
+          <button class="pill-btn active" data-date="f2">Fecha 2: Seguimiento (Mes 4)</button>
+        </div>
+        <div class="pill-group" id="scaleSelector">
+          <button class="pill-btn active" data-scale="demo">Sector Demo (0.3 ha)</button>
+          <button class="pill-btn" data-scale="pilot">Proyección Piloto (10 ha)</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Filter Bar -->
+    <section class="filter-bar">
+      <div class="filter-section" id="parcelFilters">
+        <span class="filter-label">Parcela de control:</span>
+        <button class="filter-chip active" data-parcel="ALL">Todas</button>
+        <button class="filter-chip" data-parcel="P1">Parcela P1 (100%)</button>
+        <button class="filter-chip" data-parcel="P2">Parcela P2 (83% / 92%)</button>
+        <button class="filter-chip" data-parcel="P3">Parcela P3 (75% / 67%)</button>
+      </div>
+
+      <div class="filter-section" id="statusFilters">
+        <span class="filter-label">Estado:</span>
+        <button class="filter-chip active" data-status="ALL">Todos</button>
+        <button class="filter-chip" data-status="saludable">● Saludable</button>
+        <button class="filter-chip status-stress" data-status="estres">● Estrés temprano</button>
+        <button class="filter-chip status-dead" data-status="muerto">✕ Muerto</button>
+      </div>
+    </section>
+
+    <!-- KPI Cards -->
+    <section class="kpi-grid">
+      <article class="kpi-card">
+        <div class="kpi-top">
+          <span class="kpi-title">Plantones detectados (Mask R-CNN)</span>
+          <span class="kpi-icon-box">▦</span>
+        </div>
+        <div class="kpi-value-row">
+          <span class="kpi-number" id="kpiDetected">300</span>
+          <span class="kpi-sub-pill" id="kpiScaleTag">0.3 ha demo</span>
+        </div>
+        <p class="kpi-footer">
+          Censo individual (100% cobertura vs. 2–5% muestreo manual)
+        </p>
+      </article>
+
+      <article class="kpi-card">
+        <div class="kpi-top">
+          <span class="kpi-title">Supervivencia estimada</span>
+          <span class="kpi-icon-box">◔</span>
+        </div>
+        <div class="kpi-value-row">
+          <span class="kpi-number green" id="kpiSurvival">92.0 %</span>
+          <span class="kpi-sub-pill" id="kpiAliveDead">(269 vivos / 31 muertos)</span>
+        </div>
+        <div class="parcel-mini-tags">
+          <span>P1: 100%/100%</span>
+          <span>P2: 83%/92%</span>
+          <span>P3: 75%/67%</span>
+        </div>
+      </article>
+
+      <article class="kpi-card">
+        <div class="kpi-top">
+          <span class="kpi-title">Vigor e indicadores biofísicos</span>
+          <span class="kpi-icon-box">❖</span>
+        </div>
+        <div class="bio-metrics">
+          <div class="bio-box">
+            <span class="bio-label">NDVI</span>
+            <span class="bio-val" id="kpiNdvi">0.45</span>
+          </div>
+          <div class="bio-box">
+            <span class="bio-label">LAI (m²/m²)</span>
+            <span class="bio-val" id="kpiLai">1.10</span>
+          </div>
+          <div class="bio-box">
+            <span class="bio-label">CCC (g/m²)</span>
+            <span class="bio-val" id="kpiCcc">0.45</span>
+          </div>
+        </div>
+        <p class="kpi-footer">
+          Bandas Visibles + Red-Edge + NIR calibradas radiométricamente
+        </p>
+      </article>
+
+      <article class="kpi-card">
+        <div class="kpi-top">
+          <span class="kpi-title">Alertas tempranas activas</span>
+          <span class="kpi-icon-box warn">⚠</span>
+        </div>
+        <div class="kpi-value-row">
+          <span class="kpi-number amber" id="kpiAlertSectors">2 sectores</span>
+          <span class="kpi-sub-pill alert-pill" id="kpiAlertCount">47 plantones</span>
+        </div>
+        <div class="alert-list" id="kpiAlertList">
+          <div class="alert-item">
+            Alerta 1: 30 plantones · ΔLAI medio -0.25 (riego y resiembra)
+          </div>
+          <div class="alert-item">
+            Alerta 2: 17 plantones · ΔLAI medio -0.15 (revisión de riego)
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <!-- Main Orthomosaic & Inspection Workspace -->
+    <section class="main-grid">
+      <div class="panel">
+        <div class="panel-header">
+          <div>
+            <h2 class="panel-title">Ortomosaico Analítico Georreferenciado (Este / Norte en metros)</h2>
+            <p class="panel-subtitle">
+              Haz clic en cualquier plantón para inspeccionar su estado individual y métricas biofísicas
+            </p>
+          </div>
+        </div>
+
+        <div class="layers-bar" id="layerSelector">
+          <button class="layer-btn active" data-layer="vital">Estado Vital (Mask R-CNN)</button>
+          <button class="layer-btn" data-layer="ndvi">Vigor NDVI</button>
+          <button class="layer-btn" data-layer="lai">Índice LAI</button>
+          <button class="layer-btn" data-layer="ccc">Clorofila CCC</button>
+          <button class="layer-btn" data-layer="delta">Cambio Temporal (ΔLAI / ΔCCC)</button>
+        </div>
+
+        <div class="map-toolbar">
+          <span>● Resolución: 1.5 cm/px · 60 m Este x 50 m Norte</span>
+          <span id="hoverCoords">Pasa el cursor o haz clic sobre un plantón</span>
+          <span>N ↑</span>
+        </div>
+
+        <div class="map-canvas-wrap">
+          <canvas id="orthomosaicCanvas" width="820" height="360"></canvas>
+        </div>
+
+        <div class="map-legend">
+          <div class="legend-items" id="mapLegendItems">
+            <span class="legend-dot"><i class="dot" style="background:#22c55e;"></i> Saludable</span>
+            <span class="legend-dot"><i class="dot" style="background:#f59e0b;"></i> Estrés temprano</span>
+            <span class="legend-dot"><i class="dot" style="background:#ef4444;"></i> Muerto</span>
+          </div>
+          <span id="visibleCountLabel">Mostrando 300 plantones</span>
+        </div>
+      </div>
+
+      <aside class="panel">
+        <div class="inspection-header">
+          <div>
+            <span class="kpi-title">Inspección individual</span>
+            <h2 class="panel-title" id="inspId">Plantón #ALG-0142</h2>
+          </div>
+          <span class="status-badge saludable" id="inspStatusBadge">Saludable</span>
+        </div>
+
+        <div class="meta-grid">
+          <div class="meta-item">
+            <span>Especie nativa:</span>
+            <strong><em>Neltuma pallida</em></strong>
+          </div>
+          <div class="meta-item">
+            <span>Ubicación / Parcela:</span>
+            <strong id="inspCoords">E: 5.3 m · N: 24.9 m (General)</strong>
+          </div>
+          <div class="meta-item">
+            <span>Altura estimada (CHM):</span>
+            <strong id="inspChm">51.8 cm</strong>
+          </div>
+          <div class="meta-item">
+            <span>Diámetro de copa:</span>
+            <strong id="inspCrown">0.43 m²</strong>
+          </div>
+        </div>
+
+        <div class="progress-group">
+          <div class="progress-row">
+            <div class="progress-top">
+              <span>NDVI (Vigor espectral)</span>
+              <span id="inspNdviVal">0.57</span>
+            </div>
+            <div class="bar-track">
+              <div class="bar-fill" id="inspNdviBar" style="width: 71%;"></div>
+            </div>
+          </div>
+
+          <div class="progress-row">
+            <div class="progress-top">
+              <span>LAI (Índice de Área Foliar)</span>
+              <span id="inspLaiVal">1.33 m²/m²</span>
+            </div>
+            <div class="bar-track">
+              <div class="bar-fill" id="inspLaiBar" style="width: 66%;"></div>
+            </div>
+          </div>
+
+          <div class="progress-row">
+            <div class="progress-top">
+              <span>CCC (Contenido de Clorofila en Copa)</span>
+              <span id="inspCccVal">0.58 g/m²</span>
+            </div>
+            <div class="bar-track">
+              <div class="bar-fill" id="inspCccBar" style="width: 64%;"></div>
+            </div>
+          </div>
+
+          <div class="progress-row">
+            <div class="progress-top">
+              <span>Variación temporal (ΔLAI respecto a Mes 3)</span>
+              <span id="inspDeltaVal">+0.14 m²/m²</span>
+            </div>
+            <div class="bar-track">
+              <div class="bar-fill" id="inspDeltaBar" style="width: 72%;"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="rec-box" id="inspRecommendation">
+          <strong>Diagnóstico operativo:</strong> Desarrollo foliar estable y buena respuesta espectral. Mantener programación de riego estándar.
+        </div>
+      </aside>
+    </section>
+  </div>
+
+  <script>
+    // Generador determinístico para mantener consistencia visual en la simulación
+    function mulberry32(seed) {
+      return function () {
+        let t = (seed += 0x6d2b79f5);
+        t = Math.imul(t ^ (t >>> 15), t | 1);
+        t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+      };
+    }
+
+    const rng = mulberry32(20261123);
+
+    // Crear 300 plantones distribuidos en 60m Este x 50m Norte y parcelas P1, P2, P3
+    const plants = [];
+    const cols = 20;
+    const rows = 15; // 20 * 15 = 300 plantones
+
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        const idx = r * cols + c + 1;
+        const east = Number((2.5 + c * 2.85 + (rng() - 0.5) * 0.7).toFixed(1));
+        const north = Number((2.5 + r * 3.1 + (rng() - 0.5) * 0.7).toFixed(1));
+
+        let parcel = "P1";
+        if (east >= 20 && east < 42) parcel = "P2";
+        else if (east >= 42) parcel = "P3";
+
+        // Definir estados para reflejar ~92% supervivencia en Fecha 2 y zonas de alerta
+        const roll = rng();
+        let statusF2 = "saludable";
+        if (roll > 0.915) {
+          statusF2 = "muerto";
+        } else if (roll > 0.76 || (parcel === "P3" && r > 7 && c > 14)) {
+          statusF2 = "estres";
+        }
+
+        const statusF1 =
+          statusF2 === "muerto" && rng() > 0.45
+            ? "estres"
+            : statusF2 === "estres" && rng() > 0.5
+            ? "saludable"
+            : statusF2;
+
+        const baseNdvi =
+          statusF2 === "saludable"
+            ? 0.46 + rng() * 0.18
+            : statusF2 === "estres"
+            ? 0.25 + rng() * 0.14
+            : 0.08 + rng() * 0.09;
+
+        const baseLai =
+          statusF2 === "saludable"
+            ? 1.05 + rng() * 0.55
+            : statusF2 === "estres"
+            ? 0.45 + rng() * 0.35
+            : 0.08 + rng() * 0.14;
+
+        const baseCcc =
+          statusF2 === "saludable"
+            ? 0.42 + rng() * 0.24
+            : statusF2 === "estres"
+            ? 0.18 + rng() * 0.14
+            : 0.04 + rng() * 0.06;
+
+        const deltaLai =
+          statusF2 === "saludable"
+            ? Number((0.04 + rng() * 0.18).toFixed(2))
+            : statusF2 === "estres"
+            ? Number((-0.28 + rng() * 0.14).toFixed(2))
+            : Number((-0.45 + rng() * 0.12).toFixed(2));
+
+        plants.push({
+          id: `ALG-${String(idx).padStart(4, "0")}`,
+          east,
+          north,
+          parcel,
+          statusF1,
+          statusF2,
+          ndviF1: Number((baseNdvi - 0.03).toFixed(2)),
+          ndviF2: Number(baseNdvi.toFixed(2)),
+          laiF1: Number((baseLai - deltaLai).toFixed(2)),
+          laiF2: Number(baseLai.toFixed(2)),
+          cccF1: Number((baseCcc - 0.03).toFixed(2)),
+          cccF2: Number(baseCcc.toFixed(2)),
+          deltaLai,
+          chm: Number((34 + rng() * 34).toFixed(1)),
+          crown: Number((0.22 + rng() * 0.42).toFixed(2))
+        });
+      }
+    }
+
+    const state = {
+      date: "f2",       // 'f1' | 'f2'
+      scale: "demo",    // 'demo' | 'pilot'
+      parcel: "ALL",    // 'ALL' | 'P1' | 'P2' | 'P3'
+      status: "ALL",    // 'ALL' | 'saludable' | 'estres' | 'muerto'
+      layer: "vital",   // 'vital' | 'ndvi' | 'lai' | 'ccc' | 'delta'
+      selectedId: "ALG-0142"
+    };
+
+    const canvas = document.getElementById("orthomosaicCanvas");
+    const ctx = canvas.getContext("2d");
+
+    function getPlantStatus(p) {
+      return state.date === "f1" ? p.statusF1 : p.statusF2;
+    }
+
+    function getPlantMetrics(p) {
+      if (state.date === "f1") {
+        return { ndvi: p.ndviF1, lai: p.laiF1, ccc: p.cccF1, delta: Number((p.deltaLai * 0.5).toFixed(2)) };
+      }
+      return { ndvi: p.ndviF2, lai: p.laiF2, ccc: p.cccF2, delta: p.deltaLai };
+    }
+
+    function getFilteredPlants() {
+      return plants.filter((p) => {
+        const st = getPlantStatus(p);
+        const matchParcel = state.parcel === "ALL" || p.parcel === state.parcel;
+        const matchStatus = state.status === "ALL" || st === state.status;
+        return matchParcel && matchStatus;
+      });
+    }
+
+    function getPlantColor(p) {
+      const st = getPlantStatus(p);
+      const m = getPlantMetrics(p);
+
+      if (state.layer === "vital") {
+        if (st === "saludable") return "#22c55e";
+        if (st === "estres") return "#f59e0b";
+        return "#ef4444";
+      }
+      if (state.layer === "ndvi") {
+        if (m.ndvi >= 0.45) return "#22c55e";
+        if (m.ndvi >= 0.25) return "#eab308";
+        return "#ef4444";
+      }
+      if (state.layer === "lai") {
+        if (m.lai >= 1.0) return "#10b981";
+        if (m.lai >= 0.45) return "#f59e0b";
+        return "#ef4444";
+      }
+      if (state.layer === "ccc") {
+        if (m.ccc >= 0.4) return "#4ade80";
+        if (m.ccc >= 0.2) return "#fbbf24";
+        return "#f87171";
+      }
+      // delta
+      if (m.delta >= 0.02) return "#22c55e";
+      if (m.delta >= -0.18) return "#f59e0b";
+      return "#ef4444";
+    }
+
+    function updateKPIs(filtered) {
+      const multiplier = state.scale === "pilot" ? 33.33 : 1;
+      const detectedBase = filtered.length;
+      const aliveBase = filtered.filter((p) => getPlantStatus(p) !== "muerto").length;
+      const deadBase = detectedBase - aliveBase;
+      const stressBase = filtered.filter((p) => getPlantStatus(p) === "estres").length;
+
+      const survivalPct = detectedBase > 0 ? ((aliveBase / detectedBase) * 100).toFixed(1) : "0.0";
+
+      const avgNdvi =
+        detectedBase > 0
+          ? (filtered.reduce((acc, p) => acc + getPlantMetrics(p).ndvi, 0) / detectedBase).toFixed(2)
+          : "0.00";
+      const avgLai =
+        detectedBase > 0
+          ? (filtered.reduce((acc, p) => acc + getPlantMetrics(p).lai, 0) / detectedBase).toFixed(2)
+          : "0.00";
+      const avgCcc =
+        detectedBase > 0
+          ? (filtered.reduce((acc, p) => acc + getPlantMetrics(p).ccc, 0) / detectedBase).toFixed(2)
+          : "0.00";
+
+      document.getElementById("kpiDetected").textContent = Math.round(detectedBase * multiplier).toLocaleString();
+      document.getElementById("kpiScaleTag").textContent =
+        state.scale === "pilot" ? "10.0 ha piloto" : "0.3 ha demo";
+
+      document.getElementById("kpiSurvival").textContent = `${survivalPct} %`;
+      document.getElementById("kpiAliveDead").textContent = `(${Math.round(
+        aliveBase * multiplier
+      )} vivos / ${Math.round(deadBase * multiplier)} muertos)`;
+
+      document.getElementById("kpiNdvi").textContent = avgNdvi;
+      document.getElementById("kpiLai").textContent = avgLai;
+      document.getElementById("kpiCcc").textContent = avgCcc;
+
+      const alert1 = Math.max(0, Math.round(stressBase * 0.64 * multiplier));
+      const alert2 = Math.max(0, Math.round(stressBase * multiplier) - alert1);
+      const totalAlerts = alert1 + alert2;
+
+      document.getElementById("kpiAlertSectors").textContent =
+        totalAlerts > 0 ? "2 sectores" : "0 sectores";
+      document.getElementById("kpiAlertCount").textContent = `${totalAlerts} plantones`;
+
+      document.getElementById("kpiAlertList").innerHTML = `
+        <div class="alert-item">Alerta 1: ${alert1} plantones · ΔLAI medio -0.25 (riego y resiembra)</div>
+        <div class="alert-item">Alerta 2: ${alert2} plantones · ΔLAI medio -0.15 (revisión de riego)</div>
+      `;
+
+      document.getElementById("visibleCountLabel").textContent = `Mostrando ${filtered.length} plantones`;
+    }
+
+    function updateInspection(plant) {
+      if (!plant) return;
+      const st = getPlantStatus(plant);
+      const m = getPlantMetrics(plant);
+
+      document.getElementById("inspId").textContent = `Plantón #${plant.id}`;
+
+      const badge = document.getElementById("inspStatusBadge");
+      badge.className = "status-badge";
+      if (st === "saludable") {
+        badge.classList.add("saludable");
+        badge.textContent = "Saludable";
+      } else if (st === "estres") {
+        badge.classList.add("estres");
+        badge.textContent = "Estrés temprano";
+      } else {
+        badge.classList.add("muerto");
+        badge.textContent = "Muerto";
+      }
+
+      document.getElementById(
+        "inspCoords"
+      ).textContent = `E: ${plant.east.toFixed(1)} m · N: ${plant.north.toFixed(1)} m (${plant.parcel})`;
+      document.getElementById("inspChm").textContent = `${plant.chm} cm`;
+      document.getElementById("inspCrown").textContent = `${plant.crown} m²`;
+
+      document.getElementById("inspNdviVal").textContent = m.ndvi.toFixed(2);
+      document.getElementById("inspLaiVal").textContent = `${m.lai.toFixed(2)} m²/m²`;
+      document.getElementById("inspCccVal").textContent = `${m.ccc.toFixed(2)} g/m²`;
+      document.getElementById("inspDeltaVal").textContent = `${m.delta >= 0 ? "+" : ""}${m.delta.toFixed(
+        2
+      )} m²/m²`;
+
+      const ndviBar = document.getElementById("inspNdviBar");
+      ndviBar.style.width = `${Math.min(100, Math.max(6, (m.ndvi / 0.75) * 100))}%`;
+      ndviBar.className = `bar-fill ${st === "muerto" ? "red" : st === "estres" ? "amber" : ""}`;
+
+      const laiBar = document.getElementById("inspLaiBar");
+      laiBar.style.width = `${Math.min(100, Math.max(6, (m.lai / 1.8) * 100))}%`;
+      laiBar.className = `bar-fill ${st === "muerto" ? "red" : st === "estres" ? "amber" : ""}`;
+
+      const cccBar = document.getElementById("inspCccBar");
+      cccBar.style.width = `${Math.min(100, Math.max(6, (m.ccc / 0.75) * 100))}%`;
+      cccBar.className = `bar-fill ${st === "muerto" ? "red" : st === "estres" ? "amber" : ""}`;
+
+      const deltaBar = document.getElementById("inspDeltaBar");
+      deltaBar.style.width = `${Math.min(100, Math.max(8, ((m.delta + 0.5) / 0.8) * 100))}%`;
+      deltaBar.className = `bar-fill ${m.delta < -0.18 ? "red" : m.delta < 0 ? "amber" : ""}`;
+
+      const rec = document.getElementById("inspRecommendation");
+      if (st === "saludable") {
+        rec.innerHTML =
+          "<strong>Diagnóstico operativo:</strong> Desarrollo foliar estable y buena respuesta espectral. Mantener programación de riego estándar.";
+      } else if (st === "estres") {
+        rec.innerHTML =
+          "<strong>Diagnóstico operativo:</strong> Caída incipiente en vigor/LAI. Priorizar inspección de goteros y refuerzo hídrico localizado.";
+      } else {
+        rec.innerHTML =
+          "<strong>Diagnóstico operativo:</strong> Sin actividad fotosintética activa. Programar reposición/resiembra en la próxima ventana húmeda.";
+      }
+    }
+
+    function toCanvasCoords(east, north) {
+      const padLeft = 44;
+      const padRight = 20;
+      const padTop = 20;
+      const padBottom = 34;
+
+      const usableW = canvas.width - padLeft - padRight;
+      const usableH = canvas.height - padTop - padBottom;
+
+      const x = padLeft + (east / 60) * usableW;
+      const y = padTop + usableH - (north / 50) * usableH;
+      return { x, y };
+    }
+
+    function drawOrthomosaic(filtered) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Fondo tipo ortomosaico árido
+      const grad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+      grad.addColorStop(0, "#171c16");
+      grad.addColorStop(0.5, "#1f2218");
+      grad.addColorStop(1, "#151a15");
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      const padLeft = 44;
+      const padRight = 20;
+      const padTop = 20;
+      const padBottom = 34;
+      const usableW = canvas.width - padLeft - padRight;
+      const usableH = canvas.height - padTop - padBottom;
+
+      // Cuadrícula métrica
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.08)";
+      ctx.lineWidth = 1;
+      ctx.font = "11px monospace";
+      ctx.fillStyle = "#9ab0a6";
+
+      for (let e = 0; e <= 60; e += 10) {
+        const x = padLeft + (e / 60) * usableW;
+        ctx.beginPath();
+        ctx.moveTo(x, padTop);
+        ctx.lineTo(x, padTop + usableH);
+        ctx.stroke();
+        ctx.fillText(`${e}m`, x - 10, canvas.height - 12);
+      }
+
+      for (let n = 0; n <= 50; n += 10) {
+        const y = padTop + usableH - (n / 50) * usableH;
+        ctx.beginPath();
+        ctx.moveTo(padLeft, y);
+        ctx.lineTo(padLeft + usableW, y);
+        ctx.stroke();
+        ctx.fillText(`${n}m`, 10, y + 4);
+      }
+
+      // Divisores de parcelas P1 / P2 / P3
+      const xP2 = padLeft + (20 / 60) * usableW;
+      const xP3 = padLeft + (42 / 60) * usableW;
+      ctx.save();
+      ctx.setLineDash([5, 5]);
+      ctx.strokeStyle = "rgba(180, 220, 200, 0.28)";
+      ctx.beginPath();
+      ctx.moveTo(xP2, padTop);
+      ctx.lineTo(xP2, padTop + usableH);
+      ctx.moveTo(xP3, padTop);
+      ctx.lineTo(xP3, padTop + usableH);
+      ctx.stroke();
+      ctx.restore();
+
+      ctx.fillStyle = "rgba(232, 241, 237, 0.55)";
+      ctx.font = "bold 11px sans-serif";
+      ctx.fillText("PARCELA P1", padLeft + 8, padTop + 14);
+      ctx.fillText("PARCELA P2", xP2 + 8, padTop + 14);
+      ctx.fillText("PARCELA P3", xP3 + 8, padTop + 14);
+
+      // Dibujar plantones
+      filtered.forEach((p) => {
+        const { x, y } = toCanvasCoords(p.east, p.north);
+        const color = getPlantColor(p);
+        const isSelected = p.id === state.selectedId;
+        const st = getPlantStatus(p);
+
+        // Halo de copa
+        ctx.beginPath();
+        ctx.arc(x, y, isSelected ? 10 : 6.5, 0, Math.PI * 2);
+        ctx.fillStyle = color + "33";
+        ctx.fill();
+
+        // Punto o cruz si está muerto en vista vital
+        if (state.layer === "vital" && st === "muerto") {
+          ctx.strokeStyle = "#ef4444";
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(x - 3.5, y - 3.5);
+          ctx.lineTo(x + 3.5, y + 3.5);
+          ctx.moveTo(x + 3.5, y - 3.5);
+          ctx.lineTo(x - 3.5, y + 3.5);
+          ctx.stroke();
+        } else {
+          ctx.beginPath();
+          ctx.arc(x, y, isSelected ? 5.5 : 4, 0, Math.PI * 2);
+          ctx.fillStyle = color;
+          ctx.fill();
+        }
+
+        if (isSelected) {
+          ctx.strokeStyle = "#ffffff";
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.arc(x, y, 10, 0, Math.PI * 2);
+          ctx.stroke();
+        }
+      });
+    }
+
+    function renderAll() {
+      const filtered = getFilteredPlants();
+      updateKPIs(filtered);
+      drawOrthomosaic(filtered);
+
+      const selected =
+        filtered.find((p) => p.id === state.selectedId) ||
+        plants.find((p) => p.id === state.selectedId) ||
+        filtered[0];
+      updateInspection(selected);
+    }
+
+    // Eventos de controles
+    document.querySelectorAll("#dateSelector .pill-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll("#dateSelector .pill-btn").forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        state.date = btn.dataset.date;
+        renderAll();
+      });
+    });
+
+    document.querySelectorAll("#scaleSelector .pill-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll("#scaleSelector .pill-btn").forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        state.scale = btn.dataset.scale;
+        renderAll();
+      });
+    });
+
+    document.querySelectorAll("#parcelFilters .filter-chip").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll("#parcelFilters .filter-chip").forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        state.parcel = btn.dataset.parcel;
+        renderAll();
+      });
+    });
+
+    document.querySelectorAll("#statusFilters .filter-chip").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll("#statusFilters .filter-chip").forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        state.status = btn.dataset.status;
+        renderAll();
+      });
+    });
+
+    document.querySelectorAll("#layerSelector .layer-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll("#layerSelector .layer-btn").forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        state.layer = btn.dataset.layer;
+        renderAll();
+      });
+    });
+
+    function findPlantAtEvent(evt) {
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      const mx = (evt.clientX - rect.left) * scaleX;
+      const my = (evt.clientY - rect.top) * scaleY;
+
+      const filtered = getFilteredPlants();
+      let closest = null;
+      let minDist = 14;
+
+      filtered.forEach((p) => {
+        const { x, y } = toCanvasCoords(p.east, p.north);
+        const d = Math.hypot(mx - x, my - y);
+        if (d < minDist) {
+          minDist = d;
+          closest = p;
+        }
+      });
+      return closest;
+    }
+
+    canvas.addEventListener("mousemove", (evt) => {
+      const hit = findPlantAtEvent(evt);
+      const hoverEl = document.getElementById("hoverCoords");
+      if (hit) {
+        hoverEl.textContent = `${hit.id} · E: ${hit.east}m, N: ${hit.north}m (${hit.parcel})`;
+      } else {
+        hoverEl.textContent = "Pasa el cursor o haz clic sobre un plantón";
+      }
+    });
+
+    canvas.addEventListener("click", (evt) => {
+      const hit = findPlantAtEvent(evt);
+      if (hit) {
+        state.selectedId = hit.id;
+        renderAll();
+      }
+    });
+
+    // Renderizado inicial
+    renderAll();
+  </script>
+</body>
+</html>
